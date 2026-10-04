@@ -1,0 +1,47 @@
+name: Playlist sync
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"   # every 6 hours (UTC)
+  workflow_dispatch:         # adds a "Run workflow" button
+
+permissions:
+  contents: write
+
+concurrency: playlist-sync
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements.txt
+
+      - name: Write YouTube Music auth file
+        env:
+          YTM: ${{ secrets.YTMUSIC_BROWSER_JSON }}
+        run: printf '%s' "$YTM" > browser.json
+
+      - name: Sync
+        env:
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+          SPOTIFY_REFRESH_TOKEN: ${{ secrets.SPOTIFY_REFRESH_TOKEN }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_KEY_ID: ${{ secrets.APPLE_KEY_ID }}
+          APPLE_PRIVATE_KEY: ${{ secrets.APPLE_PRIVATE_KEY }}
+        run: python sync.py
+
+      - name: Save sync state
+        if: always()
+        run: |
+          rm -f browser.json
+          git config user.name "playlist-sync-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add state.json || true
+          git diff --cached --quiet || (git commit -m "Update sync state" && git push)

@@ -1,0 +1,25 @@
+# Copy this to config.yaml and fill it in.
+
+apple:
+  # "api"    = official Apple Music API. Needs an Apple Developer account ($99/yr).
+  #            Most reliable, and gives ISRC codes for near-perfect Spotify matching.
+  # "scrape" = reads the public playlist web page. Free, but can break if Apple
+  #            changes their site, and very long playlists may come back partial.
+  mode: scrape
+  storefront: us
+  # Only needed for mode: api (can also be set as env vars APPLE_TEAM_ID etc.)
+  team_id: ""
+  key_id: ""
+  key_file: AuthKey_XXXXXXXXXX.p8
+
+targets:
+  spotify: true
+  youtube_music: true
+
+youtube_music_auth: browser.json
+
+# Use each playlist's Share > Copy Link URL from Apple Music.
+playlists:
+  - apple: https://music.apple.com/us/playlist/my-mix/pl.u-AbCdEfGhIjKl
+  - apple: https://music.apple.com/us/playlist/gym/pl.u-MnOpQrStUvWx
+    name: Gym (Synced)   # optional: name to use on Spotify/YouTube Music
